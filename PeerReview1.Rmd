@@ -4,12 +4,12 @@ author: "Sam Mengistu"
 date: "September 14, 2018"
 output:
   html_document: default
-  pdf_document: default
+  md_document: default
 
 ---
 
 
-## 1. Introduction  
+## 1. Introduction     
 Thanks to activity monitoring devices (e.g., Fitbit, Nike Fuelband or Jawbone Up) that have now made possible gathering huge amount of personal movement data. Such data can be used to study the health status and behavioral patterns of individuals, which in turn is important to prescribe protective measures for achieving a healthy society. Advances in statistical methods and software for processing and interpreting data have also opened opportunities to use such data sources easily.
 
 This exercise makes use of data from a personal activity monitoring device, a FitBit. This device collects data at 5 minute intervals through out the day. The collection consists of two months of data from an anonymous individual gathered during the months of October and November, 2012 and includes the number of steps taken in 5 minute intervals each day.
@@ -17,7 +17,7 @@ This exercise makes use of data from a personal activity monitoring device, a Fi
 The exercise involves loading and preprocessing of data, imputing missing values in the data, conducting analysis and interpreting results to answer a series of research questions.  
 
 
-#2. Methods  
+## 2. Methods    
 
 ### 2.1. Data Overview
 The data was obtained from *Activity Monitoring Data* [link](https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip), and it encompasses the following variables:
@@ -129,7 +129,7 @@ tail(fitBitD.fill_na)
 
 
 
-#3. Results
+## 3. Results  
 
 ### What is mean total number of steps taken per day?
 
@@ -265,7 +265,7 @@ qplot(interval, steps, data=dfill_na_wdwkd_avg, col = wkd_wkend, geom = c("point
 
 
 
-#4. Conclusion
+## 4. Conclusion  
 For this data set, imputting doesn't appear to change the mean and median statistics that much. And, there seems to be a variation in temporal pattern of tested patterns during weekdays and weekends. Tested subjects seems to have an earlier start in weekdays peaking (i.e, betweeen 8am and 9am) while they appears to be more spread between 8am and 8pm on weekend days.
 
 
