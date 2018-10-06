@@ -1,0 +1,285 @@
+---
+title: "Analyzing FitBit Data"
+author: "Sam Mengistu"
+date: "September 14, 2018"
+output:
+  html_document: default
+  pdf_document: default
+
+---
+
+
+## 1. Introduction  
+Thanks to activity monitoring devices (e.g., Fitbit, Nike Fuelband or Jawbone Up) that have now made possible gathering huge amount of personal movement data. Such data can be used to study the health status and behavioral patterns of individuals, which in turn is important to prescribe protective measures for achieving a healthy society. Advances in statistical methods and software for processing and interpreting data have also opened opportunities to use such data sources easily.
+
+This exercise makes use of data from a personal activity monitoring device, a FitBit. This device collects data at 5 minute intervals through out the day. The collection consists of two months of data from an anonymous individual gathered during the months of October and November, 2012 and includes the number of steps taken in 5 minute intervals each day.
+
+The exercise involves loading and preprocessing of data, imputing missing values in the data, conducting analysis and interpreting results to answer a series of research questions.  
+
+
+#2. Methods  
+
+### 2.1. Data Overview
+The data was obtained from *Activity Monitoring Data* [link](https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip), and it encompasses the following variables:
+
+  - steps: Number of steps taking in a 5-minute interval (missing values are coded as NA),
+  - date: The date on which the measurement was taken in YYYY-MM-DD format, and
+  - interval: Identifier for the 5-minute interval in which measurement was taken
+
+### 2.2. Data Acquisition and Loading
+This step requires setting of a working directory, installing required packages, loading the data into a data frame and preprocessing the data (if required) to a format suitable for the intended analysis. 
+
+#### *Setting a working directory*
+```{r echo=TRUE}
+setwd("C:/Users/Administrator/Documents/DataScience/R/Reproducible_Research/PeerReview1")
+```
+
+#### *Loading required packages and libraries*
+```{r echo=TRUE, message =FALSE}
+
+library(ggplot2)           
+library(dplyr)
+library(chron)
+library(lattice) 
+library(xtable)
+```
+
+
+#### *Creating new data folder*
+```{r echo=TRUE}
+
+if (!file.exists ("./Activity_Monitoring_Data2") ) {
+dir.create("./Activity_Monitoring_Data2")
+}
+```
+
+#### *Downloading data*
+```{r echo = TRUE, eval = TRUE, message = FALSE}
+datalink<-"https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
+download.file(datalink, destfile ="./Activity_Monitoring_Data2/repdata_data_activity.zip") 
+```
+
+#### *Loading data*
+```{r eval=TRUE, echo=TRUE}
+unzip("./Activity_Monitoring_Data2/repdata_data_activity.zip", exdir = "./Activity_Monitoring_Data2")
+
+fitBitD<- read.csv("./Activity_Monitoring_Data2/activity.csv", header = TRUE)
+```
+
+### 2.3. Preprocess the data 
+
+#### *Inspecting the data*
+```{r eval=TRUE, echo=TRUE}
+head(fitBitD)
+summary(fitBitD)
+str(fitBitD)
+```
+The data has `r nrow(fitBitD)` rows and `r ncol(fitBitD)` columns.
+
+
+#### *Change date format into date*
+```{r eval=TRUE, echo=TRUE}
+fitBitD$date<-as.Date(fitBitD$date)
+head(fitBitD)
+```
+
+#### *Aggregating (summation) of steps over date*
+This aggregation was done to calculate the total number of steps taken per day by ignoring the missing values in the dataset. 
+```{r eval=TRUE, echo=TRUE}
+fitBitD.sumSteps<- aggregate(steps ~ date, fitBitD, FUN=sum, na.rm=TRUE)
+
+head(fitBitD.sumSteps)
+```
+
+
+#### *Aggregating (average) of steps over date*
+```{r eval=TRUE, echo=TRUE}
+fitBitD.meanSteps<- aggregate(steps ~ date, fitBitD, FUN=mean)
+
+head(fitBitD.meanSteps)
+```
+
+#### *Aggregating (average) of steps over interval*
+
+```{r eval=TRUE, echo=TRUE}
+fitBitD.meanIntrvalSteps <- aggregate(steps ~ interval, fitBitD, FUN=mean, na.rm=T)
+
+head(fitBitD.meanIntrvalSteps)
+```
+
+#### *Calculating and reporting the total number of missing values in the dataset*
+
+```{r eval=TRUE, echo=TRUE}
+
+missing<-sum(is.na(fitBitD))
+
+missing
+```
+
+There are `r missing` missing values (coded as NA) in the data-set. The presence of missing values may introduce bias into some calculations or summaries of the data and needs to be inputed using the average values over date.
+
+#### *Imputing missing values and creating a new data-set with the missing data filled in*
+```{r eval=TRUE, echo=TRUE}
+fitBitD.fill_na<- transform(fitBitD, steps = ifelse(is.na(fitBitD$steps), fitBitD.meanIntrvalSteps$steps[match(fitBitD$interval, fitBitD.meanIntrvalSteps$interval)], fitBitD$steps)) 
+
+head(fitBitD.fill_na)
+tail(fitBitD.fill_na)
+```
+
+
+
+
+#3. Results
+
+### What is mean total number of steps taken per day?
+
+For this part of the assignment, you can ignore the missing values in the data-set to calculate the total number of steps taken per day and make its histogram. See the aggregation (summation) of steps over date part of the preprocessing section above.
+
+#### *Ploting histogram using hist() from base plotting*
+
+```{r plot1, fig.width=8, fig.height=6, echo=TRUE}
+hist(fitBitD.sumSteps$steps, 
+     col="wheat", 
+     ylab = "Frequency", 
+     xlab = "Steps per Day",
+     main = "Histogram of the Total Number of Steps Taken Each Day",
+     cex.lab=1.5, cex.axis=1.5, cex.main=1.5, cex.sub=1.5)
+```
+
+#### *Mean and median number of steps taken each day*
+
+```{r eval=TRUE, echo=TRUE}
+#Calculating mean
+stepsMean <- mean(fitBitD.sumSteps$steps) 
+stepsMean
+
+#Calculating median
+stepsMedian <- median(fitBitD.sumSteps$steps) 
+stepsMedian
+```
+
+The mean and the median number of steps taken each day are `r format(stepsMean, digits=1)` and `r format(stepsMedian, digits=1)` respectively.
+
+
+### *What is the average daily activity pattern?*
+
+
+#### *Aggregating (average) of steps over date*
+
+To answer this question the *fitBitD.meanSteps* data generated in the preprocessing section (see Aggregating (average) of steps over interval) above.
+
+
+#### *Time series plot of the average number of steps taken per interval*
+```{r plot2, fig.width =8, fig.height=6, echo=TRUE, warning=FALSE}
+plot(fitBitD.meanIntrvalSteps$interval, fitBitD.meanIntrvalSteps$steps, data= fitBitD.meanIntrvalSteps, xlab= "Intervals", ylab ="Steps per Interval", main ="Number of Steps per Interval", cex.lab=1.5, cex.axis=1.5, cex.main=1.5, cex.sub=1.5)
+lines(fitBitD.meanIntrvalSteps$interval, fitBitD.meanIntrvalSteps$steps, data=fitBitD.meanIntrvalSteps, col ="red")
+```
+
+
+#### *The 5-minute interval that, on average, contains the maximum number of steps*
+```{r eval=TRUE, echo=TRUE}
+#Calculating mean
+
+max.fitBitD.meanIntrvalSteps <-  fitBitD.meanIntrvalSteps$interval[which.max(fitBitD.meanIntrvalSteps$steps)]
+maxSteps<-max(fitBitD.meanIntrvalSteps$steps)
+maxSteps
+max.fitBitD.meanIntrvalSteps 
+```
+
+The `r max.fitBitD.meanIntrvalSteps`th interval on average contains the maximum number of `r format(maxSteps, digits=1)` steps.
+
+#### *Show how imputting changes the outcomes of previous analysis*
+
+#### *Make a histogram of the total number of steps taken each day using imputted data-sets* 
+
+```{r echo=TRUE, plot3, fig.width =14, fig.height=7 }
+
+fitBitD.sumSteps_fillna<- aggregate(steps ~ date, fitBitD.fill_na, FUN=sum, na.rm=TRUE)
+
+par(mfrow =c(1,2), mar= c(2, 4, 3, 1), oma = c(1,1,1,1))
+#Ploting histogram using hist() from Base Plotting
+hist(fitBitD.sumSteps_fillna$steps, 
+     col="wheat", 
+     ylab = "Frequency", 
+     xlab = "Steps per Day",
+     main = "Number Of Steps Taken Each Day - NA Imputted")
+
+#Ploting histogram using hist() from Base Plotting
+hist(fitBitD.sumSteps$steps, 
+     col="wheat", 
+     ylab = "Frequency", 
+     xlab = "Steps per Day",
+     main = "Number Of Steps Taken Each day - NA Removed")
+```
+
+
+#### *Calculate and report the mean and median total number of steps taken per day* 
+
+The mean and median of the total number of steps taken per day were previously calculated as `r format(stepsMean, digits=1)` and `r format(stepsMedian, digits=1)`respectively for NA removed data-set.
+
+The mean and median of the NA imputted data-set were also calculated below. Using the #xtable# package, Table 1 to depict the statistics calculated from both data-sets.
+
+```{r eval=TRUE, echo=TRUE}
+# Calculating mean and formating the result
+stepsMean_imputted <- format(mean(fitBitD.sumSteps_fillna$steps), digits=1) 
+
+# Calculating median
+stepsMedian_imputted <- format(median(fitBitD.sumSteps_fillna$steps), digit=1) 
+
+# Store the results in a dataframe
+stepsMean_Median <- data.frame(c(format(stepsMean, digits=1), format(stepsMedian, digits=1)), c(stepsMean_imputted, stepsMedian_imputted))
+colnames(stepsMean_Median) <- c("NA Removed", "NA Imputed")
+rownames(stepsMean_Median) <- c("mean", "median")
+
+stepsMean_Median
+
+
+```
+
+
+#### *Do mean and median values differ from the estimates from the first part of the assignment?*
+As shown in above table, imputing missing values didn't change the mean value while there is a negligible change with the median value which increased only by 1 for the imputted data-set.
+
+
+#### *What is the impact of imputing missing data on the estimates of the total daily number of steps?*
+
+Classes between 10000 and 15000 steps revealed higher frequencies in histograms with imputted data. However, the pattern in both histograms is the same.
+
+#### *Are there differences in activity patterns between weekdays and weekends?*
+
+```{r echo=TRUE, plot4, fig.width =12, fig.height=6}
+
+weekend_days_set<-c("Saturday", "Sunday")
+
+fitBitD.fill_na$wkd_wkend<-factor(ifelse(is.element(weekdays(as.Date(fitBitD.fill_na$date)),weekend_days_set), "Weekend", "Weekday"))
+
+head(fitBitD.fill_na)
+tail(fitBitD.fill_na)
+
+dfill_na_wdwkd_avg <- aggregate(steps ~ interval + wkd_wkend, fitBitD.fill_na, mean)
+
+head(dfill_na_wdwkd_avg)
+
+qplot(interval, steps, data=dfill_na_wdwkd_avg, col = wkd_wkend, geom = c("point", "line")) + theme_bw() + labs(x = "Interval", y = "Steps", title = "Activity Patterns")
+```
+
+
+
+#4. Conclusion
+For this data set, imputting doesn't appear to change the mean and median statistics that much. And, there seems to be a variation in temporal pattern of tested patterns during weekdays and weekends. Tested subjects seems to have an earlier start in weekdays peaking (i.e, betweeen 8am and 9am) while they appears to be more spread between 8am and 8pm on weekend days.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
