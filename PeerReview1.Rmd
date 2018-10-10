@@ -3,8 +3,8 @@ title: "Analyzing FitBit Data"
 author: "Sam Mengistu"
 date: "September 14, 2018"
 output:
-  html_document: default
-  #md_document: default
+  #html_document: default
+  md_document: default
 
 ---
 
