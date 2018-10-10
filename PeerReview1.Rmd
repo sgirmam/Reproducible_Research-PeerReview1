@@ -3,8 +3,8 @@ title: "Analyzing FitBit Data"
 author: "Sam Mengistu"
 date: "September 14, 2018"
 output:
-  #html_document: default
-  md_document: default
+  html_document: default
+  #md_document: default
 
 ---
 
@@ -137,12 +137,12 @@ For this part of the assignment, you can ignore the missing values in the data-s
 
 #### *Ploting histogram using hist() from base plotting*
 
-```{r plot1, fig.width=8, fig.height=6, echo=TRUE}
-hist(fitBitD.sumSteps$steps, 
+```{r fig.width=8, fig.height=6, fig.cap ="Figure 1: Histogram of the Total Number of Steps Taken Each Day", echo=TRUE, fig.align="center"}
+     hist(fitBitD.sumSteps$steps, 
      col="wheat", 
      ylab = "Frequency", 
      xlab = "Steps per Day",
-     main = "Histogram of the Total Number of Steps Taken Each Day",
+     main = " ",
      cex.lab=1.5, cex.axis=1.5, cex.main=1.5, cex.sub=1.5)
 ```
 
@@ -170,8 +170,8 @@ To answer this question the *fitBitD.meanSteps* data generated in the preprocess
 
 
 #### *Time series plot of the average number of steps taken per interval*
-```{r plot2, fig.width =8, fig.height=6, echo=TRUE, warning=FALSE}
-plot(fitBitD.meanIntrvalSteps$interval, fitBitD.meanIntrvalSteps$steps, data= fitBitD.meanIntrvalSteps, xlab= "Intervals", ylab ="Steps per Interval", main ="Number of Steps per Interval", cex.lab=1.5, cex.axis=1.5, cex.main=1.5, cex.sub=1.5)
+```{r fig.width =8, fig.height=6, echo=TRUE, warning=FALSE, fig.cap= "Figure 2: Time series Plot of the Average Number of Steps Taken per Interva", fig.align="center" }
+plot(fitBitD.meanIntrvalSteps$interval, fitBitD.meanIntrvalSteps$steps, data= fitBitD.meanIntrvalSteps, xlab= "Intervals", ylab ="Steps per Interval", main =" ", cex.lab=1.5, cex.axis=1.5, cex.main=1.5, cex.sub=1.5)
 lines(fitBitD.meanIntrvalSteps$interval, fitBitD.meanIntrvalSteps$steps, data=fitBitD.meanIntrvalSteps, col ="red")
 ```
 
@@ -192,24 +192,26 @@ The `r max.fitBitD.meanIntrvalSteps`th interval on average contains the maximum 
 
 #### *Make a histogram of the total number of steps taken each day using imputted data-sets* 
 
-```{r echo=TRUE, plot3, fig.width =14, fig.height=7 }
+```{r echo=TRUE, fig.width =14, fig.height=7, fig.cap= "Figure 3: Plots for Number of Steps Taken Each Day When (a) NA Removed and (b) NA is Imputted", fig.align="center" }
 
 fitBitD.sumSteps_fillna<- aggregate(steps ~ date, fitBitD.fill_na, FUN=sum, na.rm=TRUE)
 
-par(mfrow =c(1,2), mar= c(2, 4, 3, 1), oma = c(1,1,1,1))
+par(mfrow =c(1,2), mar= c(4, 5, 3, 1), oma = c(1,1,1,1))
 #Ploting histogram using hist() from Base Plotting
 hist(fitBitD.sumSteps_fillna$steps, 
      col="wheat", 
      ylab = "Frequency", 
      xlab = "Steps per Day",
-     main = "Number Of Steps Taken Each Day - NA Imputted")
+     main = "(a)",
+     cex.lab=1.5, cex.axis=1.5, cex.main=1.5, cex.sub=1.5)
 
 #Ploting histogram using hist() from Base Plotting
 hist(fitBitD.sumSteps$steps, 
      col="wheat", 
      ylab = "Frequency", 
      xlab = "Steps per Day",
-     main = "Number Of Steps Taken Each day - NA Removed")
+     main = "(b)", 
+     cex.lab=1.5, cex.axis=1.5, cex.main=1.5, cex.sub=1.5)
 ```
 
 
@@ -247,22 +249,34 @@ Classes between 10000 and 15000 steps revealed higher frequencies in histograms 
 
 #### *Are there differences in activity patterns between weekdays and weekends?*
 
-```{r echo=TRUE, plot4, fig.width =12, fig.height=6}
+Figur 4 below shows time series plot of each 5-minute interval and the average number of steps taken, averaged across all days, split into weekdays and weekends.
+
+```{r echo=TRUE, fig.width =12, fig.height=6, fig.cap= "Figure 4: Average Activity Patterns of Each 5 Min Interval Split Into Weekdays and Weekend Days", fig.align="center"}
 
 weekend_days_set<-c("Saturday", "Sunday")
 
-fitBitD.fill_na$wkd_wkend<-factor(ifelse(is.element(weekdays(as.Date(fitBitD.fill_na$date)),weekend_days_set), "Weekend", "Weekday"))
+fitBitD.fill_na$Days<-factor(ifelse(is.element(weekdays(as.Date(fitBitD.fill_na$date)),weekend_days_set), "Weekend", "Weekday"))
 
 head(fitBitD.fill_na)
 tail(fitBitD.fill_na)
 
-dfill_na_wdwkd_avg <- aggregate(steps ~ interval + wkd_wkend, fitBitD.fill_na, mean)
+dfill_na_wdwkd_avg <- aggregate(steps ~ interval + Days, fitBitD.fill_na, mean)
 
 head(dfill_na_wdwkd_avg)
 
-qplot(interval, steps, data=dfill_na_wdwkd_avg, col = wkd_wkend, geom = c("point", "line")) + theme_bw() + labs(x = "Interval", y = "Steps", title = "Activity Patterns")
-```
+qplot(interval, steps, data=dfill_na_wdwkd_avg, col = Days, geom = c("point", "line")) + theme_bw() + 
+      labs(x = "Interval", y = "Steps") + theme(axis.text = element_text(colour = "black"),
+      axis.title.x = element_text(size=22),
+      axis.text.x = element_text(size=20),
+      axis.title.y = element_text(size=22,angle=90),
+      axis.text.y = element_text(size=20),
+      panel.background = element_rect(fill="white"),
+      plot.title=element_text(face="bold", size=24),
+         ) + theme(legend.title = element_text(colour="black", size=16, face="bold")) +
+      theme(legend.text = element_text(colour="black", size = 16, face = "bold"))
 
+```
+ 
 
 
 ## 4. Conclusion  
